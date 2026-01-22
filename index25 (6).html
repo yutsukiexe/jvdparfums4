@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JVD PARFUMS | Maison de Haute Parfumerie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@200;400;600&display=swap');
+        
+        :root { 
+            --gold: #d4af37;
+            --dark-gold: #b8941f;
+            --black: #1a1a1a;
+        }
+        h1, h2, h3, .font-luxury { font-family: 'Playfair Display', serif; }
+        body { font-family: 'Montserrat', sans-serif; background-color: #0a0a0a; color: #e5e5e5; }
+        
+        .cart-drawer { transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .cart-open { transform: translateX(0); }
+        .text-gold { color: var(--gold); }
+        .bg-gold { background-color: var(--gold); }
+        
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-in {
+            animation: fade-in 1s ease-out;
+        }
+        
+        /* Dropdown menu */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #0a0a0a;
+            min-width: 220px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.8);
+            z-index: 100;
+            border: 1px solid #d4af37;
+            margin-top: 5px;
+            border-radius: 4px;
+            padding: 8px 0;
+        }
+        
+        .dropdown.show .dropdown-content {
+            display: block;
+        }
+        
+        .dropdown-content a {
+            color: #e5e5e5;
+            padding: 12px 20px;
+            text-decoration: none;
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.3s;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .dropdown-content a:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-content a:hover {
+            background-color: #1a1a1a;
+            color: #d4af37;
+            padding-left: 25px;
+        }
+        
+        .modal { 
+            display: none; 
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal.show { 
+            display: flex; 
+            opacity: 1;
+        }
+        
+        /* Animation flottante pour le carrousel */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-10px) rotate(1deg);
+            }
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        #carousel-products {
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+    </style>
+</head>
+<body class="text-stone-900 overflow-x-hidden">
+
+    <!-- Modal Produit -->
+    <div id="product-modal" class="modal fixed inset-0 bg-black/90 backdrop-blur-sm z-[200] items-center justify-center p-4">
+        <div class="bg-zinc-900 max-w-5xl w-full max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 border border-stone-800">
+            <button onclick="closeProductModal()" class="absolute top-6 right-6 text-3xl text-stone-500 hover:text-gold transition z-10">
+                &times;
+            </button>
+            
+            <div class="grid md:grid-cols-2 gap-0">
+                <!-- Galerie d'images produit -->
+                <div class="bg-black">
+                    <div class="relative h-[400px] md:h-[600px]">
+                        <img id="modal-img-main" src="" class="w-full h-full object-cover">
+                        
+                        <!-- Boutons navigation images -->
+                        <button onclick="previousImage()" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/70 hover:bg-black rounded-full flex items-center justify-center text-white transition">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button onclick="nextImage()" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/70 hover:bg-black rounded-full flex items-center justify-center text-white transition">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                        
+                        <!-- Indicateurs -->
+                        <div id="modal-img-indicators" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                            <!-- Points indicateurs générés dynamiquement -->
+                        </div>
+                    </div>
+                    
+                    <!-- Miniatures -->
+                    <div id="modal-thumbnails" class="grid grid-cols-4 gap-2 p-4">
+                        <!-- Miniatures générées dynamiquement -->
+                    </div>
+                </div>
+                
+                <!-- Détails Produit -->
+                <div class="p-12 flex flex-col justify-center">
+                    <div class="mb-8">
+                        <h2 id="modal-name" class="text-3xl font-luxury tracking-tight mb-4 text-white" style="font-weight: 700;"></h2>
+                        <p id="modal-description" class="text-stone-400 text-sm leading-relaxed mb-6"></p>
+                        
+                        <div class="border-t border-b border-stone-800 py-6 mb-6">
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-4xl font-bold text-gold" id="modal-price"></span>
+                                <span class="text-stone-500 text-sm">EUR</span>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4 text-xs text-stone-500 mb-8">
+                            <p><i class="fa-solid fa-droplet text-gold mr-2"></i> Eau de Parfum - 100ml</p>
+                            <p><i class="fa-solid fa-leaf text-gold mr-2"></i> Fabrication française</p>
+                            <p><i class="fa-solid fa-truck text-gold mr-2"></i> Livraison offerte dès 2 flacons</p>
+                        </div>
+                    </div>
+                    
+                    <button onclick="addToCartFromModal()" class="w-full bg-gold text-black py-5 text-[10px] uppercase tracking-[0.3em] hover:bg-white transition-all duration-500 shadow-xl font-bold flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-shopping-bag"></i>
+                        Ajouter à l'écrin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tiroir Favoris -->
+    <div id="favorites-drawer" class="fixed top-0 right-0 w-full md:w-[450px] h-full bg-zinc-900 z-[100] shadow-2xl cart-drawer flex flex-col border-l border-stone-800">
+        <div class="p-8 border-b border-stone-800 flex justify-between items-center bg-black text-white font-luxury">
+            <h2 class="text-lg tracking-[0.2em] uppercase">Mes Favoris</h2>
+            <button onclick="toggleFavorites()" class="text-3xl hover:text-gold transition">&times;</button>
+        </div>
+        
+        <div id="favorites-items" class="flex-1 overflow-y-auto p-8 space-y-6">
+            <p id="empty-favorites-msg" class="text-stone-500 text-center mt-20 italic">Aucun favori ajouté.</p>
+        </div>
+
+        <div class="p-8 border-t border-stone-800 bg-black">
+            <button onclick="addAllFavoritesToCart()" class="w-full bg-gold text-black py-5 font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-white transition-all duration-500 shadow-xl">
+                Ajouter tous au panier
+            </button>
+        </div>
+    </div>
+
+    <!-- Panier -->
+    <div id="cart-drawer" class="fixed top-0 right-0 w-full md:w-[450px] h-full bg-zinc-900 z-[100] shadow-2xl cart-drawer flex flex-col border-l border-stone-800">
+        <div class="p-8 border-b border-stone-800 flex justify-between items-center bg-black text-white font-luxury">
+            <h2 class="text-lg tracking-[0.2em] uppercase">Votre Écrin</h2>
+            <button onclick="toggleCart()" class="text-3xl hover:text-gold transition">&times;</button>
+        </div>
+        
+        <div id="cart-items" class="flex-1 overflow-y-auto p-8 space-y-6">
+            <p id="empty-msg" class="text-stone-500 text-center mt-20 italic">Votre sélection est vide.</p>
+        </div>
+
+        <div class="p-8 border-t border-stone-800 bg-black space-y-4">
+            <div class="flex justify-between text-xl font-bold">
+                <span class="font-luxury text-sm tracking-widest uppercase text-stone-300">Total</span>
+                <span id="cart-total" class="text-gold">0,00 €</span>
+            </div>
+            <button onclick="checkout()" class="w-full bg-gold text-black py-5 font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-white transition-all duration-500 shadow-xl">
+                Procéder au paiement direct
+            </button>
+        </div>
+    </div>
+
+    <!-- Bandeau promotionnel -->
+    <div class="w-full bg-gold text-black text-center py-2 text-xs uppercase tracking-widest font-semibold">
+        Livraison gratuite pour les achats de plus de 99,00€
+    </div>
+
+    <!-- Navigation principale -->
+    <nav class="sticky top-0 w-full z-50 bg-black border-b border-stone-800">
+        <!-- Première ligne : Logo + Recherche + Panier -->
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="#" class="flex items-center gap-3 group">
+                <img src="https://i.ebayimg.com/images/g/1b8AAOSwjaVoSxzT/s-l140.png" alt="JVD Parfums" class="h-14 w-14 object-contain group-hover:scale-105 transition-transform duration-300">
+                <span class="text-xl font-luxury text-white" style="font-weight: 400; letter-spacing: 0.1em;">JVD <span class="text-gold italic" style="font-weight: 700;">Parfums</span></span>
+            </a>
+            
+            <!-- Barre de recherche centrale -->
+            <div class="flex-1 max-w-2xl mx-8 hidden md:block">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        placeholder="Rechercher un produit ..." 
+                        class="w-full bg-zinc-900 border border-stone-800 text-white px-6 py-3 text-sm focus:outline-none focus:border-gold transition"
+                        oninput="searchProducts(this.value)"
+                    >
+                    <i class="fa-solid fa-search absolute right-6 top-1/2 transform -translate-y-1/2 text-stone-500"></i>
+                </div>
+            </div>
+            
+            <!-- Panier + Favoris -->
+            <div class="flex items-center space-x-6">
+                <div id="total-price" class="text-gold font-semibold text-sm hidden md:block">0,00 €</div>
+                
+                <div class="relative cursor-pointer group" onclick="toggleCart()">
+                    <i class="fa-solid fa-shopping-bag text-xl text-white group-hover:text-gold transition"></i>
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-gold text-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+                </div>
+                
+                <i class="fa-regular fa-user text-xl text-white hover:text-gold transition cursor-pointer hidden md:block"></i>
+                
+                <!-- Menu burger mobile -->
+                <button onclick="toggleMobileMenu()" class="md:hidden text-xl text-white hover:text-gold transition">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Deuxième ligne : Menu de navigation -->
+        <div class="border-t border-stone-800">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex items-center justify-center gap-12 py-4">
+                    <a href="#accueil" onclick="filterProducts('all'); event.preventDefault()" class="text-xs uppercase tracking-[0.15em] hover:text-gold transition font-semibold text-stone-300">Accueil</a>
+                    
+                    <a href="#bestseller" onclick="filterProducts('bestseller'); event.preventDefault()" class="text-xs uppercase tracking-[0.15em] hover:text-gold transition font-semibold text-stone-300 flex items-center gap-1">Best Seller <span class="text-gold">🔥</span></a>
+                    
+                    <a href="#nouveaute" onclick="filterProducts('nouveaute'); event.preventDefault()" class="text-xs uppercase tracking-[0.15em] hover:text-gold transition font-semibold text-stone-300 flex items-center gap-1">Nouveautés <span class="text-gold">✨</span></a>
+                    
+                    <!-- Séparateur -->
+                    <div class="h-4 w-px bg-stone-700"></div>
+                    
+                    <!-- Catégories dynamiques avec sous-catégories -->
+                    <div id="dynamic-categories-menu" class="flex items-center gap-8">
+                        <!-- Généré dynamiquement -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Menu Mobile -->
+    <div id="mobile-menu" class="fixed top-0 left-0 w-full bg-black/98 z-40 shadow-lg transform -translate-y-full transition-transform duration-300 md:hidden border-b border-stone-800">
+        <div class="flex flex-col p-6 space-y-4">
+            <!-- Recherche mobile -->
+            <div class="relative mb-4">
+                <input 
+                    type="text" 
+                    placeholder="Rechercher un produit ..." 
+                    class="w-full bg-zinc-900 border border-stone-800 text-white px-4 py-3 text-sm focus:outline-none focus:border-gold transition"
+                    oninput="searchProducts(this.value)"
+                >
+                <i class="fa-solid fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-stone-500"></i>
+            </div>
+            
+            <a href="#accueil" onclick="filterProducts('all'); toggleMobileMenu(); event.preventDefault()" class="text-sm uppercase tracking-[0.2em] hover:text-gold transition font-semibold py-2 text-stone-300">Accueil</a>
+            <a href="#bestseller" onclick="filterProducts('bestseller'); toggleMobileMenu(); event.preventDefault()" class="text-sm uppercase tracking-[0.2em] hover:text-gold transition font-semibold py-2 text-stone-300">Best Seller 🔥</a>
+            <a href="#nouveaute" onclick="filterProducts('nouveaute'); toggleMobileMenu(); event.preventDefault()" class="text-sm uppercase tracking-[0.2em] hover:text-gold transition font-semibold py-2 text-stone-300">Nouveautés ✨</a>
+            <a href="#femme" onclick="filterProducts('femme'); toggleMobileMenu(); event.preventDefault()" class="text-sm uppercase tracking-[0.2em] hover:text-gold transition font-semibold py-2 text-stone-300">Femme</a>
+            <a href="#homme" onclick="filterProducts('homme'); toggleMobileMenu(); event.preventDefault()" class="text-sm uppercase tracking-[0.2em] hover:text-gold transition font-semibold py-2 text-stone-300">Homme</a>
+            <a href="#nouveautes" onclick="filterProducts('all'); toggleMobileMenu(); event.preventDefault()" class="text-sm uppercase tracking-[0.2em] hover:text-gold transition font-semibold py-2 text-stone-300">Nouveautés</a>
+            <a href="#marques" onclick="filterProducts('all'); toggleMobileMenu(); event.preventDefault()" class="text-sm uppercase tracking-[0.2em] hover:text-gold transition font-semibold py-2 text-stone-300">Marques</a>
+        </div>
+    </div>
+
+    <!-- Header avec Carrousel -->
+    <header id="hero-header" class="h-screen relative flex items-center bg-black overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1615634260167-c8cdede054de?q=80&w=2000" class="absolute inset-0 w-full h-full object-cover opacity-30">
+        
+        <!-- Overlay gradient -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80"></div>
+        
+        <!-- Contenu principal (décalé à gauche) -->
+        <div class="relative z-10 w-full max-w-7xl mx-auto px-6 flex items-center justify-between gap-12">
+            <!-- Texte Hero (côté gauche) -->
+            <div class="flex-1 animate-in fade-in duration-1000">
+                <div class="mb-8">
+                    <div class="inline-block border border-gold/50 px-6 py-2 mb-6">
+                        <span class="text-gold text-[9px] uppercase tracking-[0.4em] font-light">Maison de Haute Parfumerie</span>
+                    </div>
+                </div>
+                
+                <h1 class="text-5xl md:text-7xl text-white font-luxury mb-6 tracking-tight leading-tight" style="font-weight: 700;">
+                    L'Art de la<br>
+                    <span class="text-gold italic">Fragrance</span>
+                </h1>
+                
+                <p class="text-stone-300 text-sm md:text-base max-w-xl mb-12 leading-relaxed font-light" style="font-family: 'Cormorant Garamond', serif; font-size: 18px;">
+                    Chaque flacon raconte une histoire, chaque note évoque un souvenir. 
+                    Découvrez notre collection exclusive de parfums rares et précieux.
+                </p>
+                
+                <div class="flex flex-col md:flex-row gap-4">
+                    <button onclick="document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' })" class="group relative px-10 py-5 bg-gold text-black font-semibold text-xs uppercase tracking-[0.3em] hover:bg-white transition-all duration-300 overflow-hidden">
+                        <span class="relative z-10">Découvrir la collection</span>
+                        <div class="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
+                    </button>
+                    
+                    <button onclick="filterProducts('bestseller'); document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' })" class="px-10 py-5 border-2 border-white text-white font-semibold text-xs uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all duration-300">
+                        Best Sellers
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Carrousel Best Sellers (côté droit) - Sans cadre -->
+            <div class="hidden lg:block flex-shrink-0 w-80">
+                <!-- Conteneur du carrousel -->
+                <div id="carousel-container" class="relative">
+                    <div id="carousel-products" class="transition-all duration-700">
+                        <!-- Produit du carrousel généré dynamiquement -->
+                    </div>
+                </div>
+                
+                <!-- Indicateurs -->
+                <div id="carousel-indicators" class="flex justify-center gap-2 mt-6">
+                    <!-- Points générés dynamiquement -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <i class="fa-solid fa-chevron-down text-gold text-2xl opacity-50"></i>
+        </div>
+    </header>
+
+    <!-- Contenu Principal -->
+    <main id="products-section" class="max-w-7xl mx-auto px-6 py-24">
+        <div class="text-center mb-20">
+            <div class="inline-block mb-4">
+                <span class="text-gold text-[10px] uppercase tracking-[0.4em] font-semibold">Nos Créations</span>
+            </div>
+            <h2 id="section-title" class="text-4xl md:text-5xl font-luxury tracking-tight mb-6 text-white" style="font-weight: 700;">Nos Fragrances</h2>
+            <p class="text-stone-400 text-base max-w-2xl mx-auto font-light" style="font-family: 'Cormorant Garamond', serif; font-size: 17px;">
+                Des essences rares sélectionnées avec soin pour créer des parfums d'exception
+            </p>
+            <div class="h-px w-24 bg-gradient-to-r from-transparent via-gold to-transparent mx-auto mt-8"></div>
+        </div>
+
+        <div id="products-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+            <!-- Les produits seront chargés ici -->
+        </div>
+
+        <div class="bg-zinc-900 border border-gold/20 p-12 rounded-lg text-center max-w-3xl mx-auto shadow-2xl">
+            <div class="mb-6">
+                <i class="fa-solid fa-shield-halved text-gold text-4xl mb-4"></i>
+            </div>
+            <h3 class="font-luxury text-2xl mb-6 tracking-tight text-white">Paiement 100% Sécurisé</h3>
+            <p class="text-sm text-stone-400 leading-relaxed mb-8 font-light" style="font-family: 'Cormorant Garamond', serif;">
+                Vos transactions sont protégées par les technologies de cryptage les plus avancées. 
+                Nous acceptons tous les modes de paiement pour votre confort.
+            </p>
+            <div class="flex justify-center gap-6 text-stone-600">
+                <i class="fa-brands fa-cc-visa text-4xl"></i>
+                <i class="fa-brands fa-cc-mastercard text-4xl"></i>
+                <i class="fa-brands fa-cc-paypal text-4xl"></i>
+                <i class="fa-brands fa-cc-amex text-4xl"></i>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white py-24 px-6 mt-32">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="font-luxury text-4xl tracking-tight mb-4" style="font-weight: 700;">
+                    JVD <span class="text-gold italic">PARFUMS</span>
+                </h2>
+                <p class="text-stone-400 text-sm font-light" style="font-family: 'Cormorant Garamond', serif;">
+                    Maison de Haute Parfumerie depuis 2024
+                </p>
+            </div>
+            
+            <div class="border-t border-stone-800 pt-8 text-center">
+                <p class="text-[10px] text-stone-600 uppercase tracking-[0.3em]">&copy; 2024 JVD Parfums - Tous droits réservés</p>
+            </div>
+        </div>
+        
+        <!-- Bouton Admin caché en bas à gauche -->
+        <a href="#admin" onclick="promptAdminPassword(); event.preventDefault();" class="fixed bottom-6 left-6 w-12 h-12 bg-zinc-900 hover:bg-gold text-white hover:text-black rounded-full flex items-center justify-center transition-all duration-300 shadow-xl border border-stone-800 hover:border-gold z-50 group">
+            <i class="fa-solid fa-lock text-sm group-hover:scale-110 transition-transform"></i>
+        </a>
+    </footer>
+    
+    <!-- Modal Panel Admin -->
+    <div id="admin-modal" class="modal fixed inset-0 bg-black/95 backdrop-blur-sm z-[300] items-center justify-center p-4">
+        <div class="bg-zinc-900 max-w-6xl w-full max-h-[90vh] overflow-y-auto relative border border-gold">
+            <div class="sticky top-0 bg-black border-b border-gold p-6 flex justify-between items-center z-10">
+                <h2 class="text-2xl font-luxury text-gold uppercase tracking-wider">Panel Administration JVD</h2>
+                <button onclick="closeAdminPanel()" class="text-3xl text-stone-500 hover:text-gold transition">
+                    &times;
+                </button>
+            </div>
+            
+            <div class="p-8">
+                <!-- Onglets Admin -->
+                <div class="flex gap-4 mb-8 border-b border-stone-800">
+                    <button onclick="switchAdminTab('products')" id="tab-products" class="px-6 py-3 text-sm uppercase tracking-wider font-bold border-b-2 border-gold text-gold">
+                        <i class="fa-solid fa-spray-can-sparkles mr-2"></i>Produits
+                    </button>
+                    <button onclick="switchAdminTab('categories')" id="tab-categories" class="px-6 py-3 text-sm uppercase tracking-wider font-bold border-b-2 border-transparent text-stone-400 hover:text-gold transition">
+                        <i class="fa-solid fa-folder-tree mr-2"></i>Catégories & Sous-catégories
+                    </button>
+                    <button onclick="switchAdminTab('auto-assign')" id="tab-auto-assign" class="px-6 py-3 text-sm uppercase tracking-wider font-bold border-b-2 border-transparent text-stone-400 hover:text-gold transition">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Attribution Automatique
+                    </button>
+                </div>
+                
+                <!-- TAB: Gestion des produits -->
+                <div id="admin-tab-products" class="admin-tab">
+                    <!-- Barre de recherche et filtre admin -->
+                    <div class="mb-6 flex gap-4">
+                        <div class="flex-1 relative">
+                            <input 
+                                type="text" 
+                                id="admin-search" 
+                                placeholder="Rechercher un produit par nom..." 
+                                class="w-full bg-zinc-900 border border-stone-700 text-white px-4 py-3 pl-10 rounded focus:outline-none focus:border-gold"
+                                oninput="filterAdminProducts()"
+                            >
+                            <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-500"></i>
+                        </div>
+                        
+                        <select id="admin-filter" onchange="filterAdminProducts()" class="bg-zinc-900 border border-stone-700 text-white px-4 py-3 rounded focus:outline-none focus:border-gold">
+                            <option value="all">Tous les produits</option>
+                            <option value="homme">Homme</option>
+                            <option value="femme">Femme</option>
+                            <option value="bestseller">Best Sellers</option>
+                        </select>
+                    </div>
+                    
+                    <div id="admin-products-list" class="space-y-4"></div>
+                </div>
+                
+                <!-- TAB: Catégories & Sous-catégories -->
+                <div id="admin-tab-categories" class="admin-tab hidden">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Catégories principales -->
+                        <div class="bg-black border border-stone-800 p-6 rounded">
+                            <h4 class="text-lg font-luxury text-gold mb-4 flex items-center justify-between">
+                                Catégories Principales
+                                <button onclick="addMainCategory()" class="text-sm bg-gold text-black px-3 py-1 rounded hover:bg-white transition">
+                                    <i class="fa-solid fa-plus mr-1"></i>Ajouter
+                                </button>
+                            </h4>
+                            <div id="main-categories-list" class="space-y-2"></div>
+                        </div>
+                        
+                        <!-- Sous-catégories -->
+                        <div class="bg-black border border-stone-800 p-6 rounded">
+                            <h4 class="text-lg font-luxury text-gold mb-4">Sous-catégories</h4>
+                            <div class="mb-4">
+                                <select id="subcategory-parent" class="w-full bg-zinc-900 border border-stone-700 text-white px-4 py-2 rounded focus:outline-none focus:border-gold mb-2">
+                                    <option value="">Sélectionner une catégorie parent</option>
+                                </select>
+                                <button onclick="addSubCategory()" class="w-full bg-gold text-black px-4 py-2 rounded hover:bg-white transition text-sm font-bold uppercase tracking-wider">
+                                    <i class="fa-solid fa-plus mr-2"></i>Ajouter une sous-catégorie
+                                </button>
+                            </div>
+                            <div id="subcategories-list" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- TAB: Attribution automatique -->
+                <div id="admin-tab-auto-assign" class="admin-tab hidden">
+                    <div class="bg-black border border-stone-800 p-6 rounded max-w-3xl mx-auto">
+                        <h4 class="text-xl font-luxury text-gold mb-6">Attribution Automatique par Mot-clé</h4>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <label class="text-stone-400 text-sm mb-2 block">Mot-clé à rechercher</label>
+                                <input 
+                                    type="text" 
+                                    id="auto-keyword" 
+                                    placeholder="Ex: bois, floral, oriental..." 
+                                    class="w-full bg-zinc-900 border border-stone-700 text-white px-4 py-3 rounded focus:outline-none focus:border-gold"
+                                >
+                                <p class="text-stone-500 text-xs mt-1">Le système cherchera dans le nom ET la description</p>
+                            </div>
+                            
+                            <div>
+                                <label class="text-stone-400 text-sm mb-2 block">Sous-catégorie de destination</label>
+                                <select id="auto-target-subcategory" class="w-full bg-zinc-900 border border-stone-700 text-white px-4 py-3 rounded focus:outline-none focus:border-gold">
+                                    <option value="">Sélectionner une sous-catégorie</option>
+                                </select>
+                            </div>
+                            
+                            <button onclick="previewAutoAssign()" class="w-full bg-stone-800 border border-gold text-gold px-6 py-3 rounded hover:bg-gold hover:text-black transition font-bold uppercase tracking-wider text-sm">
+                                <i class="fa-solid fa-eye mr-2"></i>Prévisualiser les résultats
+                            </button>
+                        </div>
+                        
+                        <div id="auto-assign-preview" class="hidden border-t border-stone-800 pt-6">
+                            <h5 class="text-white font-bold mb-4">Produits trouvés :</h5>
+                            <div id="auto-assign-results" class="space-y-2 mb-4 max-h-60 overflow-y-auto"></div>
+                            <button onclick="executeAutoAssign()" class="w-full bg-gold text-black px-6 py-4 rounded hover:bg-white transition font-bold uppercase tracking-wider">
+                                <i class="fa-solid fa-check mr-2"></i>Confirmer l'attribution
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center pt-6 border-t border-stone-800 mt-8">
+                    <button onclick="saveAdminChanges()" class="bg-gold text-black px-12 py-4 font-bold uppercase tracking-widest text-sm hover:bg-white transition-all duration-500">
+                        <i class="fa-solid fa-save mr-2"></i>
+                        Enregistrer les modifications
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cart = [];
+        let favorites = [];
+        let currentProduct = null;
+        let currentImageIndex = 0;
+        let products = [];
+        let currentFilter = 'all';
+        let searchQuery = '';
+        let categories = {};
+        let currentAdminTab = 'products';
+
+        // Toggle menu mobile
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const icon = menu.classList.contains('-translate-y-full') ? 'fa-times' : 'fa-bars';
+            menu.classList.toggle('-translate-y-full');
+        }
+
+        // Toggle panier
+        function toggleCart() {
+            const drawer = document.getElementById('cart-drawer');
+            const favDrawer = document.getElementById('favorites-drawer');
+            favDrawer.classList.remove('cart-open');
+            drawer.classList.toggle('cart-open');
+        }
+
+        // Toggle favoris
+        function toggleFavorites() {
+            const drawer = document.getElementById('favorites-drawer');
+            const cartDrawer = document.getElementById('cart-drawer');
+            cartDrawer.classList.remove('cart-open');
+            drawer.classList.toggle('cart-open');
+        }
+
+        // Ajouter/retirer des favoris
+        function toggleFavorite(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const index = favorites.findIndex(f => f.id === productId);
+            if (index > -1) {
+                favorites.splice(index, 1);
+            } else {
+                favorites.push({...product});
+            }
+            
+            updateFavorites();
+            displayProducts(); // Rafraîchir pour mettre à jour l'icône cœur
+        }
+
+        // Mettre à jour l'affichage des favoris
+        function updateFavorites() {
+            const list = document.getElementById('favorites-items');
+            const countEl = document.getElementById('favorites-count');
+            const emptyMsg = document.getElementById('empty-favorites-msg');
+            
+            countEl.innerText = favorites.length;
+            countEl.style.display = favorites.length > 0 ? 'flex' : 'none';
+            emptyMsg.style.display = favorites.length > 0 ? 'none' : 'block';
+
+            list.innerHTML = favorites.map((item) => `
+                <div class="flex items-center gap-4 animate-in fade-in duration-300">
+                    <div class="w-16 h-20 bg-black flex-shrink-0 border border-stone-800 cursor-pointer" onclick="openProductModal(${item.id}); toggleFavorites();">
+                        <img src="${item.img}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 cursor-pointer" onclick="openProductModal(${item.id}); toggleFavorites();">
+                        <h4 class="font-bold text-[10px] uppercase tracking-widest text-white">${item.name}</h4>
+                        <p class="text-gold text-xs mt-1">${item.price}€</p>
+                    </div>
+                    <button onclick="event.stopPropagation(); removeFavorite(${item.id});" class="text-red-500 hover:text-red-300 transition p-2">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+            `).join('');
+            
+            // Charger les sous-catégories pour chaque produit
+            productsToDisplay.forEach(product => {
+                setTimeout(() => loadSubcategoriesForProduct(product.id), 50);
+            });
+        }
+        
+        function loadSubcategoriesForProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const categorySelect = document.getElementById(`admin-category-${productId}`);
+            const subcategorySelect = document.getElementById(`admin-subcategory-${productId}`);
+            
+            if (!categorySelect || !subcategorySelect) return;
+            
+            const selectedCategory = categorySelect.value;
+            const cat = categories[selectedCategory];
+            
+            subcategorySelect.innerHTML = '<option value="">Aucune</option>';
+            
+            if (cat && cat.subcategories && cat.subcategories.length > 0) {
+                subcategorySelect.innerHTML += cat.subcategories.map(sub => 
+                    `<option value="${sub}" ${product.subcategory === sub ? 'selected' : ''}>${sub}</option>`
+                ).join('');
+            }
+        }
+
+        // Retirer un favori spécifique
+        function removeFavorite(productId) {
+            const index = favorites.findIndex(f => f.id === productId);
+            if (index > -1) {
+                favorites.splice(index, 1);
+                updateFavorites();
+                displayProducts(); // Rafraîchir pour mettre à jour l'icône cœur
+            }
+        }
+
+        // Ajouter tous les favoris au panier
+        function addAllFavoritesToCart() {
+            if (favorites.length === 0) return;
+            
+            favorites.forEach(fav => {
+                cart.push({...fav});
+            });
+            
+            updateCart();
+            toggleFavorites();
+            toggleCart();
+        }
+
+        // Recherche de produits
+        function searchProducts(query) {
+            searchQuery = query.toLowerCase().trim();
+            displayProducts();
+            
+            // Masquer le header si recherche active
+            const header = document.getElementById('hero-header');
+            if (searchQuery && header) {
+                header.style.display = 'none';
+                document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' });
+            } else if (!searchQuery && currentFilter === 'all') {
+                header.style.display = 'flex';
+            }
+        }
+
+        // Filtrer les produits par catégorie
+        function filterProducts(category, subcategory = null) {
+            currentFilter = category;
+            searchQuery = ''; // Réinitialiser la recherche
+            document.getElementById('search-input').value = '';
+            
+            // Masquer/afficher le header selon la catégorie
+            const header = document.getElementById('hero-header');
+            if (category === 'all') {
+                header.style.display = 'flex';
+            } else {
+                header.style.display = 'none';
+            }
+            
+            displayProducts(subcategory);
+            
+            // Scroll vers les produits (sauf pour "all")
+            if (category !== 'all') {
+                document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // ÉTAPE 1 : Récupération automatique de vos articles eBay
+        async function fetchEbayProducts() {
+            try {
+                // ⚠️ IMPORTANT : Remplacez ces valeurs par les vôtres
+                const EBAY_USER_ID = 'VOTRE_ID_EBAY'; // Votre nom d'utilisateur eBay
+                const EBAY_APP_ID = 'VOTRE_APP_ID'; // Clé API eBay (voir instructions ci-dessous)
+                
+                const url = `https://svcs.ebay.com/services/search/FindingService/v1?OPERATION-NAME=findItemsAdvanced&SERVICE-VERSION=1.0.0&SECURITY-APPNAME=${EBAY_APP_ID}&RESPONSE-DATA-FORMAT=JSON&REST-PAYLOAD&Seller=${EBAY_USER_ID}&paginationInput.entriesPerPage=100`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.findItemsAdvancedResponse?.[0]?.searchResult?.[0]?.item) {
+                    const items = data.findItemsAdvancedResponse[0].searchResult[0].item;
+                    
+                    products = items.map((item, index) => ({
+                        id: index + 1,
+                        ebayId: item.itemId[0],
+                        name: item.title[0],
+                        price: parseFloat(item.sellingStatus[0].currentPrice[0].__value__),
+                        img: item.galleryURL?.[0] || item.pictureURLLarge?.[0] || 'https://via.placeholder.com/400',
+                        images: item.pictureURLLarge || [item.galleryURL?.[0]],
+                        description: item.subtitle?.[0] || 'Parfum de luxe JVD',
+                        category: detectCategory(item.title[0], item.subtitle?.[0]),
+                        subcategory: "",
+                        bestseller: false,
+                        url: item.viewItemURL[0]
+                    }));
+                    
+                    console.log(`✅ ${products.length} produits chargés depuis eBay`);
+                    displayProducts();
+                } else {
+                    console.error('❌ Aucun produit trouvé sur eBay');
+                    loadFallbackProducts();
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement eBay:', error);
+                loadFallbackProducts();
+            }
+        }
+        
+        // Détecter la catégorie automatiquement
+        function detectCategory(title, subtitle) {
+            const text = (title + ' ' + (subtitle || '')).toLowerCase();
+            
+            for (let [key, cat] of Object.entries(categories)) {
+                if (text.includes(key) || text.includes(cat.name.toLowerCase())) {
+                    return key;
+                }
+            }
+            
+            // Par défaut, chercher homme/femme
+            if (text.includes('homme') || text.includes('men')) return 'homme';
+            if (text.includes('femme') || text.includes('women')) return 'femme';
+            
+            return Object.keys(categories)[0] || 'general';
+        }
+
+        // Produits de secours si l'API eBay ne fonctionne pas
+        function loadFallbackProducts() {
+            // Initialiser les catégories par défaut si vides
+            if (Object.keys(categories).length === 0) {
+                categories = {
+                    homme: { name: 'Homme', subcategories: ['Boisé', 'Oriental', 'Frais'] },
+                    femme: { name: 'Femme', subcategories: ['Floral', 'Fruité', 'Gourmand'] }
+                };
+                updateNavigationMenu();
+            }
+            
+            products = [
+                {
+                    id: 1,
+                    name: "Oud Royal",
+                    price: 89,
+                    images: [
+                        "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=800",
+                        "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800",
+                        "https://images.unsplash.com/photo-1541643600914-78b084683601?w=800"
+                    ],
+                    img: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=800",
+                    description: "Une essence précieuse de bois d'oud associée à des notes de rose damascena et de safran. Cette composition majestueuse évoque la richesse des palais orientaux et la noblesse des traditions ancestrales de la parfumerie arabe.",
+                    category: "homme",
+                    subcategory: "",
+                    bestseller: true
+                },
+                {
+                    id: 2,
+                    name: "Rose Impériale",
+                    price: 95,
+                    images: [
+                        "https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=800",
+                        "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=800",
+                        "https://images.unsplash.com/photo-1547887537-6158d64c35b3?w=800"
+                    ],
+                    img: "https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=800",
+                    description: "Un bouquet royal de roses de Damas et de Grasse, sublimé par des touches de litchi et de pivoine. Cette fragrance délicate célèbre l'élégance intemporelle de la rose, reine des fleurs.",
+                    category: "femme",
+                    subcategory: "",
+                    bestseller: true
+                },
+                {
+                    id: 3,
+                    name: "Ambre Noir",
+                    price: 79,
+                    images: [
+                        "https://images.unsplash.com/photo-1541643600914-78b084683601?w=800",
+                        "https://images.unsplash.com/photo-1585487646104-e4447f88757e?w=800"
+                    ],
+                    img: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=800",
+                    description: "Des notes ambrées profondes mariées à la vanille de Madagascar et au patchouli. Cette composition chaleureuse et enveloppante crée un sillage mystérieux et sensuel, parfait pour les soirées d'hiver.",
+                    category: "homme",
+                    subcategory: "",
+                    bestseller: false
+                },
+                {
+                    id: 4,
+                    name: "Jasmin Absolu",
+                    price: 85,
+                    images: [
+                        "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800",
+                        "https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=800"
+                    ],
+                    img: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800",
+                    description: "L'essence pure de jasmin sambac de Grasse, enrichie de notes vertes et de muguet. Cette fragrance florale intense capture la beauté nocturne du jasmin en pleine floraison.",
+                    category: "femme",
+                    subcategory: "",
+                    bestseller: true
+                },
+                {
+                    id: 5,
+                    name: "Musc Blanc",
+                    price: 82,
+                    images: [
+                        "https://images.unsplash.com/photo-1547887537-6158d64c35b3?w=800"
+                    ],
+                    img: "https://images.unsplash.com/photo-1547887537-6158d64c35b3?w=800",
+                    description: "Un musc délicat et envoûtant, adouci par des notes de coton blanc et de fleur d'oranger. Cette composition pure et lumineuse évoque la douceur d'un voile de soie.",
+                    category: "femme",
+                    subcategory: "",
+                    bestseller: false
+                },
+                {
+                    id: 6,
+                    name: "Vétiver Mystique",
+                    price: 88,
+                    images: [
+                        "https://images.unsplash.com/photo-1585487646104-e4447f88757e?w=800",
+                        "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=800"
+                    ],
+                    img: "https://images.unsplash.com/photo-1585487646104-e4447f88757e?w=800",
+                    description: "Le vétiver premium d'Haïti associé à des notes boisées de cèdre et de bergamote. Cette fragrance élégante et rafraîchissante incarne la sophistication masculine intemporelle.",
+                    category: "homme",
+                    subcategory: "",
+                    bestseller: false
+                }
+            ];
+            displayProducts();
+        }
+
+        // Affichage des produits
+        function displayProducts(filterSubcategory = null) {
+            const grid = document.getElementById('products-grid');
+            const sectionTitle = document.getElementById('section-title');
+            
+            // Changer le titre selon la catégorie ou recherche
+            if (searchQuery) {
+                sectionTitle.textContent = `Résultats pour "${searchQuery}"`;
+            } else if (filterSubcategory) {
+                sectionTitle.textContent = filterSubcategory;
+            } else {
+                const titles = {
+                    'all': 'Nos Fragrances',
+                    'bestseller': 'Best Sellers',
+                    'femme': 'Collection Femme',
+                    'homme': 'Collection Homme'
+                };
+                sectionTitle.textContent = titles[currentFilter] || 'Nos Fragrances';
+            }
+            
+            // Filtrer les produits selon la catégorie ET la recherche ET sous-catégorie
+            let filteredProducts = products;
+            
+            // Filtrage par recherche
+            if (searchQuery) {
+                filteredProducts = products.filter(p => 
+                    p.name.toLowerCase().includes(searchQuery) ||
+                    p.description.toLowerCase().includes(searchQuery) ||
+                    p.category.toLowerCase().includes(searchQuery)
+                );
+            }
+            // Filtrage par sous-catégorie
+            else if (filterSubcategory) {
+                filteredProducts = products.filter(p => p.subcategory === filterSubcategory);
+            }
+            // Filtrage par catégorie (si pas de recherche)
+            else {
+                if (currentFilter === 'femme') {
+                    filteredProducts = products.filter(p => p.category === 'femme');
+                } else if (currentFilter === 'homme') {
+                    filteredProducts = products.filter(p => p.category === 'homme');
+                } else if (currentFilter === 'bestseller') {
+                    filteredProducts = products.filter(p => p.bestseller === true);
+                } else if (currentFilter === 'nouveaute') {
+                    filteredProducts = products.filter(p => p.nouveaute === true);
+                }
+            }
+            
+            // Afficher message si aucun résultat
+            if (filteredProducts.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-20">
+                        <i class="fa-solid fa-search text-6xl text-stone-700 mb-4"></i>
+                        <p class="text-stone-500 text-lg">Aucun parfum trouvé</p>
+                        <button onclick="searchQuery=''; document.getElementById('search-input').value=''; displayProducts();" class="mt-6 text-gold hover:underline text-sm">
+                            Voir tous les parfums
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = filteredProducts.map(product => `
+                <div class="group cursor-pointer bg-zinc-900 border border-stone-800 hover:border-gold transition-all duration-500 overflow-hidden relative">
+                    <div class="relative h-80 overflow-hidden bg-black" onclick="openProductModal(${product.id})">
+                        <img src="${product.img}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500"></div>
+                        ${product.bestseller ? '<div class="absolute top-4 left-4 bg-gold text-black text-[9px] px-3 py-1 uppercase tracking-widest font-bold">Best Seller</div>' : ''}
+                    </div>
+                    
+                    <div class="p-6 text-center" onclick="openProductModal(${product.id})">
+                        <h3 class="font-luxury text-lg tracking-tight mb-2 text-white">${product.name}</h3>
+                        <p class="text-stone-500 text-xs italic mb-4 line-clamp-2">${product.description}</p>
+                        <p class="text-gold text-2xl font-bold">${product.price}€</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Ouvrir la modal produit
+        function openProductModal(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            currentProduct = product;
+            currentImageIndex = 0;
+            
+            // Charger les images
+            displayProductImages();
+            
+            document.getElementById('modal-name').textContent = product.name;
+            document.getElementById('modal-description').textContent = product.description;
+            document.getElementById('modal-price').textContent = product.price + '€';
+            
+            // Mettre à jour le bouton favoris
+            updateModalFavoriteButton();
+            
+            const modal = document.getElementById('product-modal');
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Afficher les images du produit
+        function displayProductImages() {
+            if (!currentProduct || !currentProduct.images) return;
+            
+            const images = currentProduct.images;
+            const mainImg = document.getElementById('modal-img-main');
+            const thumbnails = document.getElementById('modal-thumbnails');
+            const indicators = document.getElementById('modal-img-indicators');
+            
+            // Image principale
+            mainImg.src = images[currentImageIndex];
+            
+            // Miniatures
+            thumbnails.innerHTML = images.map((img, index) => `
+                <div onclick="changeImage(${index})" class="cursor-pointer border-2 ${index === currentImageIndex ? 'border-gold' : 'border-stone-800'} hover:border-gold transition overflow-hidden">
+                    <img src="${img}" class="w-full h-20 object-cover">
+                </div>
+            `).join('');
+            
+            // Indicateurs (points)
+            indicators.innerHTML = images.map((_, index) => `
+                <div class="w-2 h-2 rounded-full ${index === currentImageIndex ? 'bg-gold' : 'bg-stone-600'} transition"></div>
+            `).join('');
+        }
+
+        // Changer d'image
+        function changeImage(index) {
+            if (!currentProduct || !currentProduct.images) return;
+            currentImageIndex = index;
+            displayProductImages();
+        }
+
+        // Image précédente
+        function previousImage() {
+            if (!currentProduct || !currentProduct.images) return;
+            currentImageIndex = (currentImageIndex - 1 + currentProduct.images.length) % currentProduct.images.length;
+            displayProductImages();
+        }
+
+        // Image suivante
+        function nextImage() {
+            if (!currentProduct || !currentProduct.images) return;
+            currentImageIndex = (currentImageIndex + 1) % currentProduct.images.length;
+            displayProductImages();
+        }
+
+        // Mettre à jour le bouton favoris dans la modal
+        function updateModalFavoriteButton() {
+            const btn = document.getElementById('modal-favorite-btn');
+            if (!currentProduct || !btn) return;
+            
+            const isFavorite = favorites.some(f => f.id === currentProduct.id);
+            const icon = btn.querySelector('i');
+            
+            if (isFavorite) {
+                icon.className = 'fa-solid fa-heart';
+                btn.innerHTML = `<i class="fa-solid fa-heart"></i> Retirer des favoris`;
+            } else {
+                icon.className = 'fa-regular fa-heart';
+                btn.innerHTML = `<i class="fa-regular fa-heart"></i> Ajouter aux favoris`;
+            }
+        }
+
+        // Toggle favori depuis la modal
+        function toggleFavoriteFromModal() {
+            if (!currentProduct) return;
+            toggleFavorite(currentProduct.id);
+            updateModalFavoriteButton();
+        }
+
+        // Fermer la modal produit
+        function closeProductModal() {
+            const modal = document.getElementById('product-modal');
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+            currentProduct = null;
+        }
+
+        // Ajouter au panier depuis la modal
+        function addToCartFromModal() {
+            if (currentProduct) {
+                cart.push({...currentProduct});
+                localStorage.setItem('jvd_cart', JSON.stringify(cart));
+                updateCart();
+                closeProductModal();
+                toggleCart();
+            }
+        }
+        
+        function addToCart(product) {
+            console.log('➕ Ajout au panier:', product.name);
+            cart.push(product);
+            localStorage.setItem('jvd_cart', JSON.stringify(cart));
+            updateCart();
+            console.log('🛒 Panier après ajout:', cart.length, 'articles');
+            
+            // Afficher brièvement le panier
+            toggleCart();
+        }
+
+        function toggleCart() {
+            document.getElementById('cart-drawer').classList.toggle('cart-open');
+        }
+
+        function updateCart() {
+            const list = document.getElementById('cart-items');
+            const totalEl = document.getElementById('cart-total');
+            const topTotalEl = document.getElementById('total-price');
+            const countEl = document.getElementById('cart-count');
+            const emptyMsg = document.getElementById('empty-msg');
+            
+            console.log('🛒 Mise à jour du panier:', cart.length, 'articles');
+            
+            if (countEl) countEl.innerText = cart.length;
+            if (emptyMsg) emptyMsg.style.display = cart.length > 0 ? 'none' : 'block';
+
+            let total = 0;
+            let htmlContent = '';
+            
+            cart.forEach((item, index) => {
+                total += parseFloat(item.price) || 0;
+                htmlContent += `
+                    <div class="flex items-center gap-4 mb-4 pb-4 border-b border-stone-800 animate-in fade-in duration-300">
+                        <div class="w-16 h-20 bg-black flex-shrink-0 border border-stone-800">
+                            <img src="${item.img || 'https://via.placeholder.com/80'}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/80'">
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-[10px] uppercase tracking-widest text-white">${item.name}</h4>
+                            <p class="text-gold text-xs mt-1">${item.price}€</p>
+                        </div>
+                        <button onclick="removeFromCartByIndex(${index})" class="text-stone-600 hover:text-red-500 transition p-2">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            if (list) {
+                list.innerHTML = htmlContent || '<p class="text-stone-500 text-sm text-center py-4">Panier vide</p>';
+            }
+            
+            if (totalEl) totalEl.innerText = total.toFixed(2) + " €";
+            if (topTotalEl) topTotalEl.innerText = total.toFixed(2) + " €";
+            
+            console.log('💰 Total du panier:', total.toFixed(2) + " €");
+        }
+
+        function removeFromCartByIndex(index) {
+            console.log('Suppression du panier, index:', index);
+            if (index >= 0 && index < cart.length) {
+                cart.splice(index, 1);
+                localStorage.setItem('jvd_cart', JSON.stringify(cart));
+                updateCart();
+            }
+        }
+
+        function removeFromCart(index) {
+            removeFromCartByIndex(index);
+        }
+
+        function checkout() {
+            if(cart.length === 0) return alert("Votre écrin est vide.");
+            
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            alert(`Redirection vers le paiement sécurisé JVD PARFUMS\n\nMontant total : ${total}€\n\n(Intégrez ici Stripe ou PayPal)`);
+        }
+
+        // Fermer la modal en cliquant à l'extérieur
+        document.getElementById('product-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProductModal();
+            }
+        });
+
+        // Chargement initial - Récupère automatiquement vos produits eBay
+        window.addEventListener('DOMContentLoaded', () => {
+            // Charger le panier depuis localStorage
+            const savedCart = localStorage.getItem('jvd_cart');
+            if (savedCart) {
+                try {
+                    cart = JSON.parse(savedCart);
+                    updateCart();
+                } catch (e) {
+                    console.error('Erreur chargement panier:', e);
+                }
+            }
+            
+            // Tenter de charger depuis localStorage
+            const loaded = loadFromLocalStorage();
+            
+            if (!loaded) {
+                // Si rien dans localStorage, charger catégories par défaut
+                if (Object.keys(categories).length === 0) {
+                    categories = {
+                        homme: { name: 'Homme', subcategories: ['Boisé', 'Oriental', 'Frais'] },
+                        femme: { name: 'Femme', subcategories: ['Floral', 'Fruité', 'Gourmand'] }
+                    };
+                }
+                fetchEbayProducts();
+            } else {
+                // Si données chargées depuis localStorage
+                displayProducts();
+            }
+            
+            updateNavigationMenu();
+        });
+        
+        // PANEL ADMIN
+        const ADMIN_PASSWORD = '1234';
+        
+        function promptAdminPassword() {
+            const password = prompt('🔐 Entrez le mot de passe administrateur :');
+            
+            if (password === ADMIN_PASSWORD) {
+                openAdminPanel();
+            } else if (password !== null) {
+                alert('❌ Mot de passe incorrect !');
+            }
+        }
+        
+        function switchAdminTab(tab) {
+            currentAdminTab = tab;
+            
+            // Cacher tous les onglets
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.add('hidden'));
+            document.querySelectorAll('[id^="tab-"]').forEach(t => {
+                t.classList.remove('border-gold', 'text-gold');
+                t.classList.add('border-transparent', 'text-stone-400');
+            });
+            
+            // Afficher l'onglet sélectionné
+            document.getElementById(`admin-tab-${tab}`).classList.remove('hidden');
+            const tabBtn = document.getElementById(`tab-${tab}`);
+            tabBtn.classList.add('border-gold', 'text-gold');
+            tabBtn.classList.remove('border-transparent', 'text-stone-400');
+            
+            // Charger les données selon l'onglet
+            if (tab === 'products') {
+                displayAdminProducts();
+            } else if (tab === 'categories') {
+                displayCategories();
+            } else if (tab === 'auto-assign') {
+                loadAutoAssignSelects();
+            }
+        }
+        
+        function openAdminPanel() {
+            switchAdminTab('products');
+            document.getElementById('admin-modal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeAdminPanel() {
+            document.getElementById('admin-modal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // GESTION DES CATÉGORIES
+        function displayCategories() {
+            const mainList = document.getElementById('main-categories-list');
+            const subList = document.getElementById('subcategories-list');
+            const parentSelect = document.getElementById('subcategory-parent');
+            
+            // Catégories principales
+            mainList.innerHTML = Object.entries(categories).map(([key, cat]) => `
+                <div class="flex items-center justify-between bg-zinc-900 p-3 rounded">
+                    <span class="text-white font-bold">${cat.name}</span>
+                    <button onclick="deleteCategory('${key}')" class="text-red-500 hover:text-red-300 text-sm">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+            
+            // Parent select
+            parentSelect.innerHTML = '<option value="">Sélectionner une catégorie parent</option>' +
+                Object.entries(categories).map(([key, cat]) => 
+                    `<option value="${key}">${cat.name}</option>`
+                ).join('');
+            
+            // Sous-catégories
+            let subHTML = '';
+            Object.entries(categories).forEach(([catKey, cat]) => {
+                if (cat.subcategories && cat.subcategories.length > 0) {
+                    subHTML += `<div class="mb-4">
+                        <h5 class="text-gold text-sm font-bold mb-2">${cat.name}</h5>
+                        ${cat.subcategories.map((sub, index) => `
+                            <div class="flex items-center justify-between bg-zinc-900 p-2 rounded mb-1 ml-4">
+                                <span class="text-stone-300 text-sm">→ ${sub}</span>
+                                <button onclick="deleteSubCategory('${catKey}', ${index})" class="text-red-500 hover:text-red-300 text-xs">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>`;
+                }
+            });
+            subList.innerHTML = subHTML || '<p class="text-stone-500 text-sm text-center py-4">Aucune sous-catégorie</p>';
+            
+            // Mettre à jour le menu de navigation
+            updateNavigationMenu();
+        }
+        
+        // Mettre à jour le menu de navigation avec les catégories
+        function updateNavigationMenu() {
+            const menu = document.getElementById('dynamic-categories-menu');
+            
+            let html = '';
+            Object.entries(categories).forEach(([key, cat]) => {
+                if (cat.subcategories && cat.subcategories.length > 0) {
+                    // Catégorie avec sous-catégories (dropdown)
+                    html += `
+                        <div class="dropdown" onclick="toggleDropdown(this, event)">
+                            <a href="#${key}" class="text-xs uppercase tracking-[0.15em] hover:text-gold transition font-semibold text-stone-300 cursor-pointer flex items-center gap-1">
+                                ${cat.name} <i class="fa-solid fa-chevron-down text-[8px]"></i>
+                            </a>
+                            <div class="dropdown-content">
+                                <a href="#${key}-all" onclick="filterProducts('${key}'); closeAllDropdowns(); event.stopPropagation();">
+                                    <i class="fa-solid fa-list mr-2 text-gold text-[10px]"></i> Tout ${cat.name}
+                                </a>
+                                ${cat.subcategories.map(sub => `
+                                    <a href="#${key}-${sub}" onclick="filterProducts('${key}', '${sub}'); closeAllDropdowns(); event.stopPropagation();">
+                                        <i class="fa-solid fa-angle-right mr-2 text-gold text-[10px]"></i> ${sub}
+                                    </a>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Catégorie sans sous-catégories
+                    html += `
+                        <a href="#${key}" onclick="filterProducts('${key}'); event.preventDefault()" class="text-xs uppercase tracking-[0.15em] hover:text-gold transition font-semibold text-stone-300">
+                            ${cat.name}
+                        </a>
+                    `;
+                }
+            });
+            
+            menu.innerHTML = html;
+        }
+        
+        // Gestion du dropdown - s'ouvre au clic et reste ouvert
+        function toggleDropdown(element, event) {
+            event.stopPropagation();
+            
+            // Fermer tous les autres dropdowns
+            document.querySelectorAll('.dropdown').forEach(d => {
+                if (d !== element) d.classList.remove('show');
+            });
+            
+            // Toggle celui-ci
+            element.classList.toggle('show');
+        }
+        
+        function closeAllDropdowns() {
+            document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
+        }
+        
+        // Fermer les dropdowns si on clique ailleurs
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.dropdown')) {
+                closeAllDropdowns();
+            }
+        });
+        
+        function addMainCategory() {
+            const name = prompt('Nom de la nouvelle catégorie :');
+            if (name && name.trim()) {
+                const key = name.toLowerCase().replace(/\s+/g, '-');
+                categories[key] = { name: name.trim(), subcategories: [] };
+                displayCategories();
+            }
+        }
+        
+        function addSubCategory() {
+            const parent = document.getElementById('subcategory-parent').value;
+            if (!parent) {
+                alert('Sélectionnez d\'abord une catégorie parent');
+                return;
+            }
+            
+            const name = prompt('Nom de la sous-catégorie :');
+            if (name && name.trim()) {
+                if (!categories[parent].subcategories) {
+                    categories[parent].subcategories = [];
+                }
+                categories[parent].subcategories.push(name.trim());
+                displayCategories();
+            }
+        }
+        
+        function deleteCategory(key) {
+            if (confirm(`Supprimer la catégorie "${categories[key].name}" ?`)) {
+                delete categories[key];
+                displayCategories();
+            }
+        }
+        
+        function deleteSubCategory(catKey, index) {
+            categories[catKey].subcategories.splice(index, 1);
+            displayCategories();
+        }
+        
+        // ATTRIBUTION AUTOMATIQUE
+        function loadAutoAssignSelects() {
+            const select = document.getElementById('auto-target-subcategory');
+            let options = '<option value="">Sélectionner une sous-catégorie</option>';
+            
+            Object.entries(categories).forEach(([catKey, cat]) => {
+                if (cat.subcategories && cat.subcategories.length > 0) {
+                    options += `<optgroup label="${cat.name}">`;
+                    cat.subcategories.forEach(sub => {
+                        options += `<option value="${catKey}|||${sub}">${sub}</option>`;
+                    });
+                    options += `</optgroup>`;
+                }
+            });
+            
+            select.innerHTML = options;
+        }
+        
+        function previewAutoAssign() {
+            const keyword = document.getElementById('auto-keyword').value.toLowerCase().trim();
+            const target = document.getElementById('auto-target-subcategory').value;
+            
+            console.log('🔍 Prévisualisation:', keyword);
+            console.log('📦 Produits disponibles:', products.length);
+            
+            if (!keyword) {
+                alert('⚠️ Entrez un mot-clé à rechercher');
+                return;
+            }
+            if (!target) {
+                alert('⚠️ Sélectionnez une sous-catégorie de destination');
+                return;
+            }
+            
+            const found = products.filter(p => {
+                const nameMatch = p.name.toLowerCase().includes(keyword);
+                const descMatch = p.description && p.description.toLowerCase().includes(keyword);
+                return nameMatch || descMatch;
+            });
+            
+            console.log('📊 Résultats:', found.length, 'produit(s) trouvé(s)');
+            
+            const results = document.getElementById('auto-assign-results');
+            const preview = document.getElementById('auto-assign-preview');
+            
+            if (found.length === 0) {
+                results.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fa-solid fa-search text-4xl text-stone-700 mb-3"></i>
+                        <p class="text-stone-500 text-sm">Aucun produit trouvé avec "<span class="text-gold">${keyword}</span>"</p>
+                        <p class="text-stone-600 text-xs mt-2">Vérifiez que le mot-clé est dans le nom de vos produits</p>
+                    </div>`;
+            } else {
+                const [catKey, subName] = target.split('|||');
+                results.innerHTML = `
+                    <div class="mb-4 p-3 bg-green-900/20 border border-green-900 rounded text-green-400 text-sm">
+                        <i class="fa-solid fa-check-circle mr-2"></i>
+                        <strong>${found.length}</strong> produit(s) trouvé(s)
+                    </div>
+                    ${found.map(p => `
+                        <div class="bg-zinc-900 p-3 rounded flex items-center gap-3 mb-2 border border-stone-800 hover:border-gold transition">
+                            <img src="${p.img || 'https://via.placeholder.com/50'}" class="w-12 h-12 object-cover rounded" onerror="this.src='https://via.placeholder.com/50'">
+                            <div class="flex-1">
+                                <div class="text-white font-bold text-sm">${p.name}</div>
+                                <div class="text-stone-400 text-xs">Actuel: ${p.category || 'Aucune'} ${p.subcategory ? '→ ' + p.subcategory : ''}</div>
+                            </div>
+                            <i class="fa-solid fa-arrow-right text-gold text-xl"></i>
+                            <div class="text-gold text-sm font-bold">${subName}</div>
+                        </div>
+                    `).join('')}`;
+            }
+            
+            preview.classList.remove('hidden');
+            preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function executeAutoAssign() {
+            const keyword = document.getElementById('auto-keyword').value.toLowerCase().trim();
+            const target = document.getElementById('auto-target-subcategory').value;
+            
+            if (!keyword || !target) {
+                alert('⚠️ Veuillez remplir tous les champs');
+                return;
+            }
+            
+            const [catKey, subName] = target.split('|||');
+            
+            console.log('🔄 Attribution automatique démarrée');
+            console.log('🔑 Mot-clé:', keyword);
+            console.log('🎯 Destination:', catKey, '→', subName);
+            
+            let count = 0;
+            let modifiedProducts = [];
+            
+            products.forEach(p => {
+                const nameMatch = p.name.toLowerCase().includes(keyword);
+                const descMatch = p.description && p.description.toLowerCase().includes(keyword);
+                
+                if (nameMatch || descMatch) {
+                    p.category = catKey;
+                    p.subcategory = subName;
+                    modifiedProducts.push(p.name);
+                    count++;
+                    console.log('✅ Produit modifié:', p.name, '→', catKey, '/', subName);
+                }
+            });
+            
+            if (count === 0) {
+                alert('❌ Aucun produit trouvé avec le mot-clé "' + keyword + '"\n\nVérifiez que ce mot est dans le nom ou la description de vos produits.');
+                return;
+            }
+            
+            // Sauvegarder dans localStorage
+            saveToLocalStorage();
+            
+            alert(`✅ Attribution réussie !\n\n${count} produit(s) attribué(s) à "${subName}" (${catKey})\n\nProduits modifiés:\n${modifiedProducts.slice(0, 5).join('\n')}${count > 5 ? '\n...' : ''}\n\nLes modifications ont été sauvegardées.`);
+            
+            document.getElementById('auto-assign-preview').classList.add('hidden');
+            document.getElementById('auto-keyword').value = '';
+            
+            // Rafraîchir l'affichage
+            displayProducts();
+            displayAdminProducts();
+            
+            console.log('🎉 Attribution terminée:', count, 'produits modifiés');
+        }
+        
+        function filterAdminProducts() {
+            const searchTerm = document.getElementById('admin-search').value.toLowerCase();
+            const filterCategory = document.getElementById('admin-filter').value;
+            
+            let filtered = products;
+            
+            // Filtrer par recherche
+            if (searchTerm) {
+                filtered = filtered.filter(p => 
+                    p.name.toLowerCase().includes(searchTerm) ||
+                    p.description.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Filtrer par catégorie
+            if (filterCategory !== 'all') {
+                if (filterCategory === 'bestseller') {
+                    filtered = filtered.filter(p => p.bestseller === true);
+                } else {
+                    filtered = filtered.filter(p => p.category === filterCategory);
+                }
+            }
+            
+            displayAdminProducts(filtered);
+        }
+        
+        function displayAdminProducts(productsToDisplay = products) {
+            const adminList = document.getElementById('admin-products-list');
+            
+            if (productsToDisplay.length === 0) {
+                adminList.innerHTML = '<p class="text-stone-500 text-center py-10">Aucun produit trouvé.</p>';
+                return;
+            }
+            
+            adminList.innerHTML = productsToDisplay.map((product, index) => `
+                <div class="bg-black border border-stone-800 p-6 rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <img src="${product.img}" class="w-full h-48 object-cover rounded mb-4">
+                            <input 
+                                type="text" 
+                                id="admin-img-${product.id}" 
+                                value="${product.img}" 
+                                placeholder="URL de l'image"
+                                class="w-full bg-zinc-900 border border-stone-700 text-white px-4 py-2 text-sm rounded focus:outline-none focus:border-gold"
+                            >
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-stone-400 text-xs uppercase tracking-wider mb-2 block">Nom du produit</label>
+                                <input 
+                                    type="text" 
+                                    id="admin-name-${product.id}" 
+                                    value="${product.name}" 
+                                    class="w-full bg-zinc-900 border border-stone-700 text-white px-4 py-2 rounded focus:outline-none focus:border-gold"
+                                >
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-stone-400 text-xs uppercase tracking-wider mb-2 block">Prix (€)</label>
+                                    <input 
+                                        type="number" 
+                                        id="admin-price-${product.id}" 
+                                        value="${product.price}" 
+                                        class="w-full bg-zinc-900 border border-stone-700 text-white px-4 py-2 rounded focus:outline-none focus:border-gold"
+                                    >
+                                </div>
+                                
+                                <div>
+                                    <label class="text-stone-400 text-xs uppercase tracking-wider mb-2 block">Catégorie</label>
+                                    <select 
+                                        id="admin-category-${product.id}" 
+                                        onchange="loadSubcategoriesForProduct(${product.id})"
+                                        class="w-full bg-zinc-900 border border-stone-700 text-white px-4 py-2 rounded focus:outline-none focus:border-gold"
+                                    >
+                                        ${Object.entries(categories).map(([key, cat]) => 
+                                            `<option value="${key}" ${product.category === key ? 'selected' : ''}>${cat.name}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="text-stone-400 text-xs uppercase tracking-wider mb-2 block">Sous-catégorie (optionnel)</label>
+                                <select 
+                                    id="admin-subcategory-${product.id}" 
+                                    class="w-full bg-zinc-900 border border-stone-700 text-white px-4 py-2 rounded focus:outline-none focus:border-gold"
+                                >
+                                    <option value="">Aucune</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="text-stone-400 text-xs uppercase tracking-wider mb-2 block">Description</label>
+                                <textarea 
+                                    id="admin-desc-${product.id}" 
+                                    rows="4" 
+                                    class="w-full bg-zinc-900 border border-stone-700 text-white px-4 py-2 rounded focus:outline-none focus:border-gold text-sm"
+                                >${product.description}</textarea>
+                            </div>
+                            
+                            <div class="flex items-center gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        id="admin-bestseller-${product.id}" 
+                                        ${product.bestseller ? 'checked' : ''}
+                                        class="w-4 h-4 accent-gold"
+                                    >
+                                    <span class="text-stone-300 text-sm">Best Seller</span>
+                                </label>
+                                
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        id="admin-nouveaute-${product.id}" 
+                                        ${product.nouveaute ? 'checked' : ''}
+                                        class="w-4 h-4 accent-gold"
+                                    >
+                                    <span class="text-stone-300 text-sm">Nouveauté</span>
+                                </label>
+                                
+                                <button onclick="deleteProduct(${product.id})" class="ml-auto bg-red-900/20 border border-red-900 text-red-500 px-4 py-2 rounded text-xs uppercase tracking-wider hover:bg-red-900/40 transition">
+                                    <i class="fa-solid fa-trash mr-2"></i>Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function saveAdminChanges() {
+            products.forEach(product => {
+                const nameInput = document.getElementById(`admin-name-${product.id}`);
+                const priceInput = document.getElementById(`admin-price-${product.id}`);
+                const descInput = document.getElementById(`admin-desc-${product.id}`);
+                const categoryInput = document.getElementById(`admin-category-${product.id}`);
+                const subcategoryInput = document.getElementById(`admin-subcategory-${product.id}`);
+                const bestsellerInput = document.getElementById(`admin-bestseller-${product.id}`);
+                const imgInput = document.getElementById(`admin-img-${product.id}`);
+                
+                if (nameInput) product.name = nameInput.value;
+                if (priceInput) product.price = parseFloat(priceInput.value);
+                if (descInput) product.description = descInput.value;
+                if (categoryInput) product.category = categoryInput.value;
+                if (subcategoryInput) product.subcategory = subcategoryInput.value;
+                if (bestsellerInput) product.bestseller = bestsellerInput.checked;
+                
+                const nouveauteInput = document.getElementById(`admin-nouveaute-${product.id}`);
+                if (nouveauteInput) product.nouveaute = nouveauteInput.checked;
+                
+                if (imgInput) product.img = imgInput.value;
+            });
+            
+            // Sauvegarder dans localStorage
+            saveToLocalStorage();
+            
+            displayProducts();
+            closeAdminPanel();
+            
+            alert('✅ Modifications enregistrées définitivement !');
+        }
+        
+        // Sauvegarder dans localStorage
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('jvd_products', JSON.stringify(products));
+                localStorage.setItem('jvd_categories', JSON.stringify(categories));
+                console.log('✅ Données sauvegardées dans localStorage');
+            } catch (error) {
+                console.error('❌ Erreur de sauvegarde:', error);
+            }
+        }
+        
+        // Charger depuis localStorage
+        function loadFromLocalStorage() {
+            try {
+                const savedProducts = localStorage.getItem('jvd_products');
+                const savedCategories = localStorage.getItem('jvd_categories');
+                
+                if (savedProducts) {
+                    products = JSON.parse(savedProducts);
+                    console.log('✅ Produits chargés depuis localStorage');
+                }
+                
+                if (savedCategories) {
+                    categories = JSON.parse(savedCategories);
+                    console.log('✅ Catégories chargées depuis localStorage');
+                }
+                
+                return savedProducts !== null || savedCategories !== null;
+            } catch (error) {
+                console.error('❌ Erreur de chargement:', error);
+                return false;
+            }
+        }
+        
+        function deleteProduct(productId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
+                const index = products.findIndex(p => p.id === productId);
+                if (index > -1) {
+                    products.splice(index, 1);
+                    displayAdminProducts();
+                    alert('✅ Produit supprimé !');
+                }
+            }
+        }
+
+        // CARROUSEL BEST SELLERS
+        let carouselProducts = [];
+        let currentCarouselIndex = 0;
+        let carouselInterval;
+        
+        function initCarousel() {
+            // Récupérer 2-3 best sellers
+            carouselProducts = products.filter(p => p.bestseller === true).slice(0, 3);
+            
+            if (carouselProducts.length === 0) {
+                // Si pas de best sellers, prendre les 3 premiers produits
+                carouselProducts = products.slice(0, 3);
+            }
+            
+            console.log('🎠 Carrousel initialisé avec', carouselProducts.length, 'produits');
+            
+            // Créer les indicateurs
+            const indicators = document.getElementById('carousel-indicators');
+            if (indicators) {
+                indicators.innerHTML = carouselProducts.map((_, index) => 
+                    `<div class="w-2 h-2 rounded-full bg-stone-600 cursor-pointer transition hover:bg-gold carousel-indicator" data-index="${index}"></div>`
+                ).join('');
+                
+                // Ajouter les événements de clic sur les indicateurs
+                document.querySelectorAll('.carousel-indicator').forEach(indicator => {
+                    indicator.addEventListener('click', function() {
+                        currentCarouselIndex = parseInt(this.dataset.index);
+                        showCarouselProduct(currentCarouselIndex);
+                        resetCarouselInterval();
+                    });
+                });
+            }
+            
+            // Afficher le premier produit
+            showCarouselProduct(0);
+            
+            // Démarrer la rotation automatique
+            startCarouselRotation();
+        }
+        
+        
+        function addToCartFromCarousel(productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                addToCart(product);
+            }
+        }
+        function showCarouselProduct(index) {
+            if (!carouselProducts.length) return;
+            
+            const product = carouselProducts[index];
+            const container = document.getElementById('carousel-products');
+            
+            if (!container) return;
+            
+            // Animation de fondu avec effet de flottement
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px) scale(0.95)';
+            
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class="cursor-pointer group animate-float" onclick="openProductModal(${product.id})">
+                        <!-- Carte produit flottante -->
+                        <div class="relative bg-gradient-to-b from-zinc-900/80 to-black/90 backdrop-blur-md rounded-xl overflow-hidden shadow-2xl border border-gold/20 group-hover:border-gold/60 transition-all duration-500 group-hover:shadow-gold/20 group-hover:shadow-2xl">
+                            <!-- Image -->
+                            <div class="relative overflow-hidden">
+                                <img src="${product.img}" class="w-full h-72 object-cover group-hover:scale-110 transition-transform duration-700" onerror="this.src='https://via.placeholder.com/300'">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                                ${product.bestseller ? '<div class="absolute top-4 right-4 bg-gold text-black text-[8px] px-3 py-1.5 uppercase tracking-wider font-bold rounded-full shadow-lg">🔥 Best Seller</div>' : ''}
+                                ${product.nouveaute ? '<div class="absolute top-4 left-4 bg-blue-500 text-white text-[8px] px-3 py-1.5 uppercase tracking-wider font-bold rounded-full shadow-lg">✨ Nouveau</div>' : ''}
+                            </div>
+                            
+                            <!-- Contenu -->
+                            <div class="p-6 text-center">
+                                <h3 class="text-white font-luxury text-2xl mb-2 group-hover:text-gold transition-colors duration-300">${product.name}</h3>
+                                <p class="text-stone-400 text-xs mb-4 leading-relaxed" style="font-family: 'Cormorant Garamond', serif; font-size: 13px;">${product.description.substring(0, 90)}...</p>
+                                
+                                <div class="flex items-center justify-center gap-2 mb-4">
+                                    <div class="h-px w-8 bg-gold/50"></div>
+                                    <div class="text-gold text-3xl font-bold">${product.price}€</div>
+                                    <div class="h-px w-8 bg-gold/50"></div>
+                                </div>
+                                
+                                <button onclick="addToCartFromCarousel(${product.id}); event.stopPropagation();" class="w-full bg-gold text-black py-4 text-[9px] uppercase tracking-[0.3em] hover:bg-white transition-all duration-300 font-bold group-hover:shadow-lg">
+                                    <i class="fa-solid fa-shopping-bag mr-2"></i>Ajouter à l'écrin
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0) scale(1)';
+                
+                // Mettre à jour les indicateurs
+                document.querySelectorAll('.carousel-indicator').forEach((indicator, idx) => {
+                    if (idx === index) {
+                        indicator.classList.remove('bg-stone-600');
+                        indicator.classList.add('bg-gold');
+                    } else {
+                        indicator.classList.remove('bg-gold');
+                        indicator.classList.add('bg-stone-600');
+                    }
+                });
+            }, 300);
+        }
+        
+        function startCarouselRotation() {
+            carouselInterval = setInterval(() => {
+                currentCarouselIndex = (currentCarouselIndex + 1) % carouselProducts.length;
+                showCarouselProduct(currentCarouselIndex);
+            }, 3000); // Changer toutes les 3 secondes
+        }
+        
+        function resetCarouselInterval() {
+            clearInterval(carouselInterval);
+            startCarouselRotation();
+        }
+        
+        function stopCarousel() {
+            clearInterval(carouselInterval);
+        }
+        
+        // Initialiser le carrousel après le chargement des produits
+        const originalDisplayProducts = displayProducts;
+        displayProducts = function(...args) {
+            originalDisplayProducts.apply(this, args);
+            
+            // Initialiser le carrousel seulement une fois
+            if (carouselProducts.length === 0 && products.length > 0) {
+                setTimeout(() => initCarousel(), 500);
+            }
+        };
+    </script>
+</body>
+</html>
